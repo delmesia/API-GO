@@ -29,9 +29,14 @@ func (app *application) readIDParam(r *http.Request) (int64, error) {
 // HTTP status code to send: status int
 // Data to encode to JSON: data any
 // Header map containing additional HTTP headers to be included in the response: headers http.Headerj
-func (app *application) writeJSON(w http.ResponseWriter, status int, data any, headers http.Header) error {
+//
+
+type envelope map[string]any
+
+func (app *application) writeJSON(w http.ResponseWriter, status int, data envelope, headers http.Header) error {
 	// Encode the data to JSON, return an error if there was one.
-	js, err := json.Marshal(data)
+	// no line prefix "" and tab indents "\t" for each element
+	js, err := json.MarshalIndent(data, "", "\t")
 	if err != nil {
 		return err
 	}
