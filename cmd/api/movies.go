@@ -6,10 +6,42 @@ import (
 	"time"
 
 	"backend.delmesia/internal/data"
+	"backend.delmesia/internal/validator"
 )
 
 func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "create a new movie")
+
+	var input struct {
+		Title   string       `json:"title"`
+		Year    int32        `json:"year"`
+		Runtime data.Runtime `json:"runtime"`
+		Genres  []string     `json:"genres"`
+	}
+
+	err := app.readJSON(w, r, &input)
+	if err != nil {
+		app.errorResponse(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Copy the values from the input struct above to a new movie struct
+	movie := &data.Movie{
+		Title:   input.Title,
+		Year:    input.Year,
+		Runtime: input.Runtime,
+		Genres:  input.Genres,
+	}
+	// Initialize a new validator instance
+	v := validator.New()
+
+	// Call the ValidateMovie() function and return a response containing the errors if
+	// any of the checks fails
+	if data.ValidateMovie(v, movie); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	fmt.Fprintf(w, "%+v\n", input)
 }
 
 func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +57,7 @@ func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request)
 		CreatedAt: time.Now(),
 		Title:     "Casablanca",
 		Runtime:   102,
-		Genre:     []string{"drama", "romance", "war"},
+		Genres:    []string{"drama", "romance", "war"},
 		Version:   1,
 	}
 
