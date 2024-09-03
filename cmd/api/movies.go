@@ -41,7 +41,28 @@ func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	fmt.Fprintf(w, "%+v\n", input)
+	// Calling the Insert() method on the movies model, passing in a pointer to the
+	// validated movie struct. This will create a record in the database and update the
+	// movie struct with the system-generated value.
+	err = app.models.Movies.Insert(movie)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	// When sending a HTTP response, we need to include the a Location header
+	// to let the client know which URL they can find the newly-created resource at.
+	// Make an empty http.Header map and the use Set() method to add a new location header,
+	// interpolating the system-generated ID for the new movie in the URL.
+	headers := make(http.Header)
+	headers.Set("Location", fmt.Sprintf("/v1/movies/%d", movie.ID))
+
+	// Write a JSON response with a 201 Created status code, the movide data in
+	// the response body, and the Location header.
+	err = app.writeJSON(w, http.StatusCreated, envelope{"movie": movie}, headers)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
 
 func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request) {

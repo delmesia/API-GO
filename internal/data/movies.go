@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"backend.delmesia/internal/validator"
+
+	"github.com/lib/pq"
 )
 
 // Movie represents a movie with its attributes.
@@ -49,8 +51,20 @@ type MovieModel struct {
 	DB *sql.DB
 }
 
+// The Insert() method accepts a pointer to a movie struct, which should contain the data
+// for the new record.
 func (m MovieModel) Insert(movie *Movie) error {
-	return nil
+	// The SQL query for inserting a new record in the movies table and returning
+	// the system-generated data.
+	query := `
+		INSERT INTO movies (title, year, runtime, genres)
+		VALUES ($1, $2, $3)
+		RETURNING id, created_at, version`
+	// args will contain the values for the placeholder parameters from the movie struct.
+	// Declaring slice immediately next to the SQL query helps to make it nice and clear in the query.
+	args := []interface{}{movie.Title, movie.Year, movie.Runtime, pq.Array(movie.Genres)}
+
+	return m.DB.QueryRow(query, args...).Scan(&movie.ID, &movie.CreatedAt, &movie.Version)
 }
 
 func (m MovieModel) Get(id int64) (*Movie, error) {
