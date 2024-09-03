@@ -1,6 +1,7 @@
 package data
 
 import (
+	"database/sql"
 	"time"
 
 	"backend.delmesia/internal/validator"
@@ -41,4 +42,26 @@ func ValidateMovie(v *validator.Validator, movie *Movie) {
 	// Note that it's using the unique helper to check that all values in the input.Genres
 	// slices are unique.
 	v.Check(validator.Unique(movie.Genres), "genres", "must not contain duplicate values")
+}
+
+// A struct type which wraps a sql.DB connection pool.
+type MovieModel struct {
+	DB *sql.DB
+}
+
+func (m MovieModel) Insert(movie *Movie) error {
+	return nil
+}
+
+func (m MovieModel) Get(id int64) (*Movie, error) {
+	return nil, nil
+
+}
+
+func (m MovieModel) Update(movie *Movie) error {
+	return nil
+}
+
+func (m MovieModel) Delete(id int64) error {
+	return nil
 }

@@ -10,6 +10,7 @@ import (
 	"os"
 	"time"
 
+	"backend.delmesia/internal/data"
 	_ "github.com/lib/pq"
 )
 
@@ -29,6 +30,7 @@ type config struct {
 type application struct {
 	config config
 	logger *log.Logger
+	models data.Models
 }
 
 func main() {
@@ -58,6 +60,7 @@ func main() {
 	app := &application{
 		config: cfg,
 		logger: logger,
+		models: data.NewModels(db), // Use the data.NewModels() method to initialize a Models struct, passing in the connection pool as a parameter
 	}
 
 	mux := http.NewServeMux()
